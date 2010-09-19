@@ -1,5 +1,5 @@
 /**
-* JSS, http://timfarland.com/jss
+* SON, 'Style Object Notation' http://timfarland.com/son
 * Released under the MIT license
 *
 * Copyright (C) 2010 Tim Farland
@@ -58,7 +58,7 @@ We're trying to make json act like css here, so there are some extra things we n
 		e.g: "100%", "40px"
 
 
-3 ] JSS looks at every key in the object to try to determine if it is a selector or a css property name. It looks at the key name and sees if it matches any css property name or part. So if you try to write a selector for 'table', it will want to think you mean the css property 'table-layout'.
+3 ] son looks at every key in the object to try to determine if it is a selector or a css property name. It looks at the key name and sees if it matches any css property name or part. So if you try to write a selector for 'table', it will want to think you mean the css property 'table-layout'.
 
 So for some tags you need to really make sure it gets treated as a selector. To do that, just prefix it with a "$" (it will get ignored):
 
@@ -77,7 +77,7 @@ IF YOU'RE NOT SURE:
 
 DEV TO DO:
 
-- Convert the other way, from css to jss (so people can bring in existing stylesheets)
+- Convert the other way, from css to son (so people can bring in existing stylesheets)
 - Debug report mode
 - Create cached css files w. node.js
 - Code around conflict so $ selector override isn't needed (try something along the lines of checking for equality against all possible property chunk combinations as whole strings)
