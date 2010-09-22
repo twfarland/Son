@@ -4,9 +4,8 @@
 Converts JSON to CSS.
 Inspired by [Sass](http://sass-lang.com),
 but intended as a more javascript-native solution for manageable css
-The original lib was written with the nice [RightJS](http://rightjs.org) library
-but I ported those funcs to reduce dependencies (include, startsWith, 
-and isHash functions.)
+The original lib was written with utility functions from the nice [RightJS](http://rightjs.org) library
+but I ported those funcs to reduce dependencies (include, startsWith, and isHash functions.)
 
 Released under the MIT license
 Creator: [Tim Farland](http://timfarland.com)
@@ -17,12 +16,12 @@ Creator: [Tim Farland](http://timfarland.com)
 Son's approach is to use pure JSON to describe css stylesheets. Because of this, styles can be altered using normal js, and no
 special constructs like 'mixins' are required. This opens up many possibilities for defining, transporting, and manipulating styles.
 
-Selectors and property fragments may be nested, as in Sass.
-
-You can store the style json wherever you want, but I found it convenient to make separate .js files for my stylesheets, and use routes to 
+- Selectors and property fragments may be nested, as in Sass
+- Supports Html5/css3
+- CommonJS-ready
+- You can store the style json wherever you want, but I found it convenient to make separate .js files for my stylesheets, and use routes to 
 return the corresponding css.
-
-At this stage, it doesn't validate your css, you have to know css.
+- Also works clientside (but I wouldn't really use it for that)
 
 For example:
 
@@ -30,16 +29,25 @@ For example:
 
     (function(){
 
+    var myColour = '#ff0000';
+
     var teststyles = {
       "#navbar" : {
         width : "80%",
         height : "23px",
         ul : {
           list : {
-            style : {
-              type : "none"
+            "style-type" :  "none"
+           }
+        },
+        li : {
+            "float" : "left",
+            border : "1px solid " + myColour,
+            padding : "10px",
+            a : {
+                "font-weight" : "bold",
+                color : myColour
             }
-          }
         }
     };
 
@@ -71,11 +79,9 @@ Is returned as:
 
 ##Usage
 
-Son was designed with with [Node.js](http://nodejs.org) / [Express](http://express.js.com), but it theory, it can be used with any serverside js implementation that supports CommonJS.
+Son was designed with with [Node.js](http://nodejs.org) / [Express](http://express.js.com), but it theory, it can be used with any serverside js implementation.
 
-You dont need to do any 'watch' commands. 
-
-Just put the son.js file in your node lib folder and require it:
+You dont need to do any 'watch' commands, just put the son.js file in your node lib folder and require it:
 
    var son = require('./son');
 
@@ -84,6 +90,8 @@ Then, use son.jsonToCss() to convert your json style object to a css string:
     var css = son.jsonToCss({ STYLE OBJECT });
 
 sonNodeTest.js shows an example that uses an Express route to get the json from an external .js file and return a css file:
+
+    /* sonNodeTest.js */
 
     var http = require('http')
 	,fs = require('fs')
@@ -96,17 +104,17 @@ sonNodeTest.js shows an example that uses an Express route to get the json from 
     //Routes *.son.css to the corresponding *.son.js
     app.get('/*:file?.son.css', function(req, res){	
 	
-	fs.readFile('./' + req.params.file + ".son.js", function (err, sonToParse) {
+    fs.readFile('./' + req.params.file + ".son.js", function (err, sonToParse) {
 
-	  	if (err) throw err; 
+            if (err) throw err; 
 
-		res.send(
-			son.jsonToCss( 
-				Script.runInThisContext(sonToParse.toString("utf8"))
-			), 
-			{ 'Content-Type': 'text/css' }, 201
-		); 
-	});		
+            res.send(
+                son.jsonToCss( 
+                    Script.runInThisContext(sonToParse.toString("utf8"))
+                ), 
+                { 'Content-Type': 'text/css' }, 201
+            ); 
+        });		
     });
 
     app.listen(3000);
@@ -114,7 +122,7 @@ sonNodeTest.js shows an example that uses an Express route to get the json from 
 
 ##Manipulation
 
-Sass constructs like mixins, variables, and inheritance can be done by manipulating the style object.
+Sass-style manipulation like mixins, variables, and inheritance can just be done by manipulating the styles object.
 
 These examples are very low-level and you could manipulate the styles in more exciting ways, 
 but I'm sure you guys would have have no problem coming up with your own ideas for that,
@@ -127,26 +135,26 @@ for my own use anyway, so I'll add them later. But for now, a nice FP library li
     var myColour = '#333';
 
     var myStyles = {
-	div : {
+        div : {
             border : '1px solid ' + myColour,
             color : myColour
-	}
+        }
     };
 
 ###Mixins       
 
     var myShadow = function(colour){
         var shad = {
-	    "-moz-box-shadow" : "2px 2px 2px " + colour,
+            "-moz-box-shadow" : "2px 2px 2px " + colour,
             "-webkit-box-shadow" : "2px 2px 2px " + colour,
             "box-shadow" : "2px 2px 2px " + colour
-	};
+        };
     };
 
     var myStyles = {
-	div : {
+        div : {
             border : '1px solid #ccc'
-	}
+        }
     };
 
     //i.e. using underscore.js .extend() func:
@@ -220,6 +228,7 @@ If you're not sure, or something breaks, just err on the safe side by prefixing 
 - Do some kind of caching, using real css files created w. node.js
 - Code around conflict so the `$` selector override isn't needed (try something along the lines of checking for equality against all possible property chunk combinations as whole strings)
 - Testing
+- css validation? 
 
 
 ##Other to do
