@@ -13,7 +13,7 @@ Creator: [Tim Farland](http://timfarland.com)
 
 ##What can Son do?
 
-###Son's let you use pure JSON to describe css stylesheets
+###Son lets you use pure JSON to describe css stylesheets
 
 Because of this, styles can be altered using normal js, and no
 special constructs like 'mixins' are required. This opens up many possibilities for defining, transporting, and manipulating styles.
