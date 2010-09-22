@@ -1,3 +1,22 @@
+/**
+* SON, 'Style Object Notation' http://timfarland.com/son
+* Released under the MIT license
+*
+* Copyright (C) 2010 Tim Farland
+*
+* Converts JSON to CSS
+*
+* Inspired by Sass http://sass-lang.com
+* But intended as a more javascript-native solution for manageable css
+*
+* Some internal utility funcs informed by RightJS include, startsWith, 
+* and isHash functions. The original lib was written with RightJS 
+* but I ported those funcs to reduce dependencies
+* http://rightjs.org <<< try RightJS, if you haven't. It is good
+*/
+
+
+
 (function(){
 
 //First we need a list of all those crazy css3 properties and selectors. 
@@ -214,7 +233,7 @@ var cssProperties = [
 
 
 	//possible string beginnings for selectors (that aren't just html tags)
-	var selectorCues = [".","*","#","[",">","+","~",":"]; 
+	var selectorCues = [".","*","#","[",">","+","~",":","@"]; 
 
 	//html tags
 	var htmlTags = [
