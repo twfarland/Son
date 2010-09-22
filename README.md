@@ -7,14 +7,18 @@ but intended as a more javascript-native solution for manageable css
 The original lib was written with utility functions from the nice [RightJS](http://rightjs.org) library
 but I ported those funcs to reduce dependencies (include, startsWith, and isHash functions.)
 
-Released under the MIT license
+Released under the MIT license.
 Creator: [Tim Farland](http://timfarland.com)
 
 
 ##What can Son do?
 
-Son's approach is to use pure JSON to describe css stylesheets. Because of this, styles can be altered using normal js, and no
+###Son's let you use pure JSON to describe css stylesheets
+
+Because of this, styles can be altered using normal js, and no
 special constructs like 'mixins' are required. This opens up many possibilities for defining, transporting, and manipulating styles.
+
+Son is designed for those comfortable with both css and basic js.
 
 - Selectors and property fragments may be nested, as in Sass
 - Supports Html5/css3
@@ -144,7 +148,7 @@ for my own use anyway, so I'll add them later. But for now, a nice FP library li
 ###Mixins       
 
     var myShadow = function(colour){
-        var shad = {
+        return {
             "-moz-box-shadow" : "2px 2px 2px " + colour,
             "-webkit-box-shadow" : "2px 2px 2px " + colour,
             "box-shadow" : "2px 2px 2px " + colour
@@ -160,20 +164,20 @@ for my own use anyway, so I'll add them later. But for now, a nice FP library li
     //i.e. using underscore.js .extend() func:
     _.extend(myStyles.div, myShadow("#333"));
 
-(But personally, I would use multiple css classes instead of mixins where possible)
+(But personally, I would use assign multiple css classes to elements instead of using mixins, where possible)
 
 ###Selector inheritance
 
 Doing this the way Sass does it (by using commas in the selector instead of repeating the properties) is very nice.
-I'm going to make a method for this, something that traverses the tree. 
+I'm going to make a method for this, watch this space.
 
 ###Other ideas for manipulation
 
 - a grid system
 - colour maths
 - style generator functions
-- using proper classes to generate style objects
-- merging style objects as needed to benefit from modular css without extra http requests used in stylesheet 'import'
+- using js object inheritance to generate style objects
+- merging style objects in the manner of stylesheet 'import' to benefit from modular css without extra http requests
 - whole layout/css framework generators!
 
 
@@ -182,11 +186,11 @@ I'm going to make a method for this, something that traverses the tree.
 We're trying to make json act like css here, so there are some extra things we need to do to avoid conflicts. I will code around some of these later, but you can use Son now if you take some simple safety measures:
 
 
-1 ] Because json keys must be unique at each level, you can't overwrite with the same key like in raw css. To get around this, suffix the selector with a `|` to give uniqueness. Anything after the `|` will be ignored. 
+1 ] Because json keys must be unique at each level, you can't redeclare a selector as you can in raw css. To get around this, suffix the selector with a `|` to give uniqueness. Anything after the `|` will be ignored. 
 
-e.g: `".myClass|"` overwrites `".myClass"`
+e.g: `".myClass|"` overrides `".myClass"`
 
-e.g: `".myClass|uniqueid"` overwrites `".myClass"` 
+e.g: `".myClass|uniqueid"` overrides `".myClass"` 
 
 
 2 ] To avoid certain characters being treated as js directives, you need to wrap some things in quotes:
