@@ -409,6 +409,10 @@ var cssProperties = [
 	
 	};
 
+	//detects if linage has multiple selector
+	var hasMultiSelector = function(lineage){
+		return ( lineage[0] && lineage[0].split(",")[1] );
+	}
 
 	//detects if key is declared explicitly as a selector (if it starts with $)
 	var selectorOverride = function(key){
@@ -475,7 +479,7 @@ var jsonToCss = function(styleObj, clientside){
 
 		
 		//strip out everything after the pipe, which is only there to provide uniqueness
-		skey = key.split("|")[0];
+		skey = key.split("{")[0] + ( key.split("}")[1] || "" );
 		//e.g: ".myClass|uniq" becomes "myClass"
 
 		//clean $ from key
@@ -487,7 +491,7 @@ var jsonToCss = function(styleObj, clientside){
 				//is the key a property name? 
 				if (getKeyType(skey) === "property"){	
 			
-					//is the value an levelect? then add key to property lineage and go deeper
+					//is the value an object? then add key to property lineage and go deeper
 					if (isHashObj(level[key])){ 
 								
 						iterate( level[key], selectorLineage, propertyLineage.concat([ckey]) );
@@ -502,16 +506,45 @@ var jsonToCss = function(styleObj, clientside){
 				//is the key a selector? then write it and go deeper
 				else if (getKeyType(skey) === "selector"){
 			
-					//is the value an levelect? it should be, for a selector
+					//is the value a hash obj? it should be, for a selector
 					//print the selector and its lineage, and go down to the next level
 					if (isHashObj(level[key])){ 
 			
 						if (openSelector) wrt("}");
-										
-						wrt( selectorLineage.concat([ckey]).join(" ") + " { ");
-					
+
+						//print selector, handle whether multiple or single
+
+						if ( hasMultiSelector(selectorLineage) ){
+
+							//split first part	
+							var rootSel = selectorLineage[0].split(",");
+
+							var temp = [];
+
+							for ( part in rootSel ){ 
+								//join each part of that with the other lineage parts
+								temp.push( 
+									[rootSel[part]].concat(selectorLineage.slice(1))
+									.concat([ckey])
+									.join(" ") 
+								);
+							}
+
+							//join those parts with ","
+							temp = temp.join(",")
+	
+							//write, don't update
+							wrt( temp + " { ");
+
+						} 
+						//print as a single selector
+						else {
+							wrt( selectorLineage.concat([ckey]).join(" ") + " { ");
+						}
+
 						openSelector = true;
 					
+						//go deeper, passing in lineage
 						iterate( level[key], selectorLineage.concat([ckey]), propertyLineage );
 					} 
 					else {				
@@ -547,8 +580,7 @@ var styles = {};
 
 
 // Current version.
-var VERSION = '1.0.0';
-
+var VERSION = '1.0.1';
 
 
 // CommonJS export jsonToCss method and version #

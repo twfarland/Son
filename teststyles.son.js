@@ -1,6 +1,8 @@
 (function(){
 
-	var myColour = "#ff0000";
+	var myColour = "blue";
+
+
 
 	var teststyles = {
 		"#navbar" : {
@@ -29,13 +31,23 @@
 				padding : "10px"
 			}
 		},
-		"#other|uniq" : {
+		"#other{uniq}, #yetother, .andanother" : {
 			width : "80%",
 			"$table" : {
-				"table-layout" : "15px"
+				"table-layout" : "15px",
+				td : {
+					padding	: "3px"		
+				}
 			}
+		},
+		code : {
+			clear : "both",
+			display : "block",
+			padding : "10px"
 		}
 	};
+
+	
 
 	
 	//makes variable available to window (for clientside use)

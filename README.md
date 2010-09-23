@@ -186,11 +186,11 @@ I'm going to make a method for this, watch this space.
 We're trying to make json act like css here, so there are some extra things we need to do to avoid conflicts. I will code around some of these later, but you can use Son now if you take some simple safety measures:
 
 
-1 ] Because json keys must be unique at each level, you can't redeclare a selector as you can in raw css. To get around this, suffix the selector with a `|` to give uniqueness. Anything after the `|` will be ignored. 
+1 ] Because json keys must be unique at each level, you can't redeclare a selector as you can in raw css. To get around this, place some characters within `{}` to give uniqueness. The curly brackets and their contents will be ignored by the parser.. 
 
-e.g: `".myClass|"` overrides `".myClass"`
+e.g: `".myClass{}"` overrides `".myClass"`
 
-e.g: `".myClass|uniqueid"` overrides `".myClass"` 
+e.g: `".myClass{uniqueid}"` overrides `".myClass"` 
 
 
 2 ] To avoid certain characters being treated as js directives, you need to wrap some things in quotes:
@@ -238,6 +238,13 @@ If you're not sure, or something breaks, just err on the safe side by prefixing 
 ##Other to do
 
 - demos, docs, site
+
+
+##Changelog
+
+24.09.10 
+- Uniqueness identifiers now use curly brackets instead of pipes. 
+- Added support for multiple (comma-separated) selectors.
 
 
 ##Authors
