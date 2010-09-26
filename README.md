@@ -4,8 +4,6 @@
 Converts JSON to CSS.
 Inspired by [Sass](http://sass-lang.com),
 but intended as a more javascript-native solution for manageable css
-The original lib was written with utility functions from the nice [RightJS](http://rightjs.org) library
-but I ported those funcs to reduce dependencies (include, startsWith, and isHash functions.)
 
 Released under the MIT license.
 Creator: [Tim Farland](http://timfarland.com)
@@ -21,7 +19,6 @@ special constructs like 'mixins' are required. This opens up many possibilities 
 Son is designed for those comfortable with both css and basic js.
 
 - Selectors and property fragments may be nested, as in Sass
-- Supports Html5/css3
 - CommonJS-ready
 - You can store the style json wherever you want, but I found it convenient to make separate .js files for my stylesheets, and use routes to 
 return the corresponding css.
@@ -36,19 +33,19 @@ For example:
     var myColour = '#ff0000';
 
     var teststyles = {
-      "#navbar" : {
+      "$#navbar" : {
         width : "80%",
         height : "23px",
-        ul : {
+       "$ul" : {
           list : {
             "style-type" :  "none"
            }
         },
-        li : {
-            "float" : "left",
+        "$li" : {
+            float : "left",
             border : "1px solid " + myColour,
             padding : "10px",
-            a : {
+            "$a" : {
                 "font-weight" : "bold",
                 color : myColour
             }
@@ -79,6 +76,16 @@ Is returned as:
  	font-weight: bold;
  	color: #ff0000;
     }
+
+###Prefix any key you want treated as a css selector with `$`
+
+e.g:
+
+	"$div" : { --PROPERTIES-- }
+
+Otherwise, it will be considered a css property name.
+
+The first version of son had selector matching logic but I removed it because explicit declaration makes it much faster, and less affected by changing web standards.
    
 
 ##Usage
@@ -139,7 +146,7 @@ for my own use anyway, so I'll add them later. But for now, a nice FP library li
     var myColour = '#333';
 
     var myStyles = {
-        div : {
+        "$div" : {
             border : '1px solid ' + myColour,
             color : myColour
         }
@@ -156,13 +163,13 @@ for my own use anyway, so I'll add them later. But for now, a nice FP library li
     };
 
     var myStyles = {
-        div : {
+        "$div" : {
             border : '1px solid #ccc'
         }
     };
 
     //i.e. using underscore.js .extend() func:
-    _.extend(myStyles.div, myShadow("#333"));
+    _.extend(myStyles["$div"], myShadow("#333"));
 
 (But personally, I would use assign multiple css classes to elements instead of using mixins, where possible)
 
@@ -208,21 +215,10 @@ e.g: `"font-size"`, `"list-style-type"`
 e.g: `"100%"`, `"40px"`
 
 
-3 ] Son looks at every key in the object to try to determine if it is a selector or a css property name. It looks at the key name and sees if it matches any css property name or part. So if you try to write a selector for 'table', it will want to think you mean the css property 'table-layout'.
-
-So for some tags you need to really make sure it gets treated as a selector. To do that, just prefix it with a `"$"` (it will get ignored):
-
-    "$table"
-    "$span"
-    "$label"
-
-If you're not sure, or something breaks, just err on the safe side by prefixing any key you want to be treated as a selector with `$`	 
-
 
 ##If you're not sure:
 
 - Wrap every key/value in quotes
-- Prefix any key you want to be treated as a selector with `$`
 
 
 ##Dev to do
@@ -230,9 +226,7 @@ If you're not sure, or something breaks, just err on the safe side by prefixing 
 - Convert the other way, from css to son (so people can bring in existing stylesheets)
 - Debug report mode
 - Do some kind of caching, using real css files created w. node.js
-- Code around conflict so the `$` selector override isn't needed (try something along the lines of checking for equality against all possible property chunk combinations as whole strings)
 - Testing
-- css validation? 
 
 
 ##Other to do
@@ -243,13 +237,21 @@ If you're not sure, or something breaks, just err on the safe side by prefixing 
 ##Changelog
 
 24.09.10 
+
 - Uniqueness identifiers now use curly brackets instead of pipes. 
 - Added support for multiple (comma-separated) selectors.
+
+27.09.10
+
+- Added conversion time notification.
+- Changed for loops to js 1.6 forEach method where possible.
+- Removed all css selector matching logic. Now you must prefix anything to be treated as a css selector with '$', otherwise it will be considered a css property. This makes conversion much faster.
 
 
 ##Authors
 
-Son.js was created by [Tim Farland](http://www.timfarland.com), a web product designer based in Berlin. 
-I have a design/product background and am slowly getting deeper into dev. 
-This is my first open source project and first time using Git.
+Son.js was created by [Tim Farland](http://www.timfarland.com), a web product designer based in Berlin.
 
+##Disclaimer
+
+This is experimental code! I can't guarantee that it won't change or break something in your app. Don't sue me.

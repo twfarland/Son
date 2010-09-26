@@ -5,42 +5,42 @@
 
 
 	var teststyles = {
-		"#navbar" : {
+		"$#navbar" : {
 			width : "80%",
 			height : "23px",		
-			ul : { 
+			"$ul" : { 
 				list : {
 					style : {
 						type : "none"
 					}
 				}
 			},
-			li : {
+			"$li" : {
 			"float" : "left",
 				border : "1px solid " + myColour,
 				padding : "10px",
-				a : { 
+				"$a" : { 
 					"font-weight" : "bold" ,
 					color : myColour
 				}
 			}
 		},
-		"#other" : {
+		"$#other" : {
 			width : "50%",
 			"$table" : {
 				padding : "10px"
 			}
 		},
-		"#other{uniq}, #yetother, .andanother" : {
+		"$#other{uniq}, #yetother, .andanother" : {
 			width : "80%",
 			"$table" : {
 				"table-layout" : "15px",
-				td : {
+				"$td" : {
 					padding	: "3px"		
 				}
 			}
 		},
-		code : {
+		"$code" : {
 			clear : "both",
 			display : "block",
 			padding : "10px"
