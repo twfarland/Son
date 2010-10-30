@@ -171,12 +171,16 @@ for my own use anyway, so I'll add them later. But for now, a nice FP library li
     //i.e. using underscore.js .extend() func:
     _.extend(myStyles["$div"], myShadow("#333"));
 
-(But personally, I would use assign multiple css classes to elements instead of using mixins, where possible)
+###Assigning multiple properties to the same value
 
-###Selector inheritance
+    var myStyles = {
+        "$myDiv" : {
+            "box, -moz-box, -webkit-box" : {
+                shadow: "2px 2px 2px #666"
+            }
+        }
+    };
 
-Doing this the way Sass does it (by using commas in the selector instead of repeating the properties) is very nice.
-I'm going to make a method for this, watch this space.
 
 ###Other ideas for manipulation
 
@@ -185,7 +189,7 @@ I'm going to make a method for this, watch this space.
 - style generator functions
 - using js object inheritance to generate style objects
 - merging style objects in the manner of stylesheet 'import' to benefit from modular css without extra http requests
-- whole layout/css framework generators!
+- layout/css framework generators
 
 
 ##Gotchas
@@ -226,7 +230,6 @@ e.g: `"100%"`, `"40px"`
 - Convert the other way, from css to son (so people can bring in existing stylesheets)
 - Debug report mode
 - Do some kind of caching, using real css files created w. node.js
-- Testing
 
 
 ##Other to do
@@ -247,6 +250,11 @@ e.g: `"100%"`, `"40px"`
 - Changed for loops to js 1.6 forEach method where possible.
 - Removed all css selector matching logic. Now you must prefix anything to be treated as a css selector with '$', otherwise it will be considered a css property. This makes conversion much faster.
 
+31.10.10
+
+- Cleaned and speeded up son.js code a bit
+- Added support for multiple property declarations
+- Added son versions of blueprint css 'reset' and 'typography' sheets.
 
 ##Authors
 

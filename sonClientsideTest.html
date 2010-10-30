@@ -2,19 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>son clientside generator test</title>
-
-<script src="son.js" type="text/javascript"></script>
-<script src="teststyles.son.js" type="text/javascript"></script>
-<script type="text/javascript">
-//<![CDATA[
-
-//if arg 2 = true, does document.write the css with <style> tags. 
-//Otherwise, just returns raw css
-son.jsonToCss(teststyles,true);
-
-//]]>
-</script>
+<title>SON clientside generator test</title>
 
 <!--
 Testing the same stylesheet delivered by sonNodeTest.js
@@ -25,25 +13,75 @@ Testing the same stylesheet delivered by sonNodeTest.js
 
 <body>
 
-<h1>son Clientside test</h1>
-<p>This is just a proof of concept. In most cases you wouldn't want to use clientside generation.</p>
+<div class="container">
 
-<div id="navbar">
-	<ul>
-		<li><a href="#">Link</a></li>
-		<li class="myClass"><a href="#">Link</a></li>
-	</ul>
+	<h1>Son Clientside test</h1>
+	<h2>This is just a test.</h2>
+	<h3>Serverside usage would usually be better.</h3>
+	
+	<a href="#">Link</a>
+	
+	<div id="navbar">
+		<ul>
+			<li><a href="#">Link</a></li>
+			<li class="myClass"><a href="#">Link</a></li>
+			<li><a href="#">Link</a></li>
+			<li class="myClass"><a href="#">Link</a></li>
+		</ul>
+	</div>
+	
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>test</td>
+    <td>test</td>
+    <td>test</td>
+    <td>test</td>
+  </tr>
+  <tr>
+    <td>test</td>
+    <td>test</td>
+    <td>test</td>
+    <td>test</td>
+  </tr>
+  <tr>
+    <td>test</td>
+    <td>test</td>
+    <td>test</td>
+    <td>test</td>
+  </tr>
+</table>
+
+	
+	
+	<code id="soncss"></code>
+
 </div>
 
-<code>
+
+
+<script src="son.js" type="text/javascript"></script>
+<script src="reset.son.js" type="text/javascript"></script>
+<script src="typography.son.js" type="text/javascript"></script>
+<script src="teststyles.son.js" type="text/javascript"></script>
 <script type="text/javascript">
-//<![CDATA[
 
-document.write(son.jsonToCss(teststyles));
+window.onload = function(){
 
-//]]>
+	//put css in style tag
+	var sontag = document.createElement('style'),
+	    sonstyle = son.jsonToCss(resetCss) + son.jsonToCss(typoCss) + son.jsonToCss(teststyles);
+	
+	document.getElementsByTagName('head')[0].appendChild(sontag);
+	
+	sontag.setAttribute('type', 'text/css');
+	
+	(!window.ActiveXObject) ? sontag.innerHTML = sonstyle : sontag.styleSheet.cssText = sonstyle;	
+	
+	//show in code block
+	document.getElementById("soncss").innerHTML = sonstyle;
+
+};
 </script>
-</code>
 
 
 </body>
