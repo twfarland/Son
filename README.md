@@ -76,6 +76,26 @@ Is returned as:
  	font-weight: bold;
  	color: #ff0000;
     }
+    
+You can also write the styles in Coffeescript's lighter syntax:
+
+    myColour = "#ff1000"
+
+    testStyles = 
+        "$#navbar" : 
+            width : "80%"
+            height : "23px"		
+            "$ul" :  
+                list : 
+                    style : 
+                        type : "none"
+                "$li" : 
+                    "float" : "left"
+                    border : "1px solid " + myColour
+                    padding : "10px"
+                    "$a" :  
+                        "font-weight" : "bold" 
+                        color : myColour
 
 ###Prefix any key you want treated as a css selector with `$`
 
@@ -238,6 +258,10 @@ e.g: `"100%"`, `"40px"`
 
 
 ##Changelog
+
+06.01.11
+
+- Added some examples in coffescript.
 
 24.09.10 
 
