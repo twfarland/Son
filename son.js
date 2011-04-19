@@ -1,281 +1,237 @@
-/**
- * SON, 'Style Object Notation' http://timfarland.com/son
- * Released under the MIT license
- *
- * Copyright (C) 2010 Tim Farland
- *
- * Converts JSON to CSS
- *
- * Inspired by Sass http://sass-lang.com
- * But intended as a more javascript-native solution for manageable css
- *
- */
+(function() {
+  /*
+   Son - style object notation
 
-(function () {
+   Data defs:
+
+   A cssSelectorArray is an array adhering to the following form:
+
+      [selector, (cssPropertyObj || cssSelectorArray)...]
+
+      where:
+          - selector is a valid css selector string, e.g "#main", "a:link, a:hover", "input[type='text']", "a span"
+
+          - cssPropertyObj is a js object with only 1 key-value pair adhering to the following form:
+
+              {cssPropertyName : (cssPropertyValue || [cssPropertyObj])}
+
+              where:
+
+                  - cssPropertyName is either:
+                      - a valid css property name string, e.g: "font-weight"
+                      - multiple css property names joined by commas, e.g: "margin,padding"
+                      - a partial css property name, e.g: "font", "weight"
+                  - cssPropertyValue is a valid css property value string
 
 
-   //iterate over arrays, using the native foreach if available
-   var nativeForEach = Array.prototype.forEach,
-       hasOwnProperty = Object.prototype.hasOwnProperty;
-   
-   var each = (function (testarr) {
-      if (nativeForEach && testarr.forEach === nativeForEach) {
-         return function (obj, iterator, context) {
-            obj.forEach(iterator, context);
-         };
-      } else if (isNumber(testarr.length)) {
-         return function (obj, iterator, context) {
-            for (var i = 0, l = obj.length; i < l; i++) iterator.call(context, obj[i], i, obj);
-         };
+   A styleSheetArray is an array of cssSelectorArrays:
+
+      [cssSelectorArray]
+
+
+
+  #example data
+
+  cssPropertyObj1 = "font-size" : 1.4 + "em"
+  cssPropertyObj2 = "size" : 1.4 + "em"
+  cssPropertyObj3 = "font" : [cssPropertyObj2]
+  cssPropertyObj4 = "margin,padding" : 10 + "px"
+
+  cssSelectorArray1 = ["#main", cssPropertyObj1]
+  cssSelectorArray2 = [".main", cssPropertyObj3]
+  cssSelectorArray3 = ["div", cssPropertyObj1, cssPropertyObj4]
+
+  styleSheetArray1 = [cssSelectorArray1,cssSelectorArray3]
+  */  var Son, isArray, root, toString;
+  root = this;
+  isArray = Array.isArray || (function(elem) {
+    return toString.call(elem) === '[object Array]';
+  });
+  toString = Object.prototype.toString;
+  Son = function() {
+    /*
+    Function defs
+    */
+    /*
+    render : styleSheetArray -> cssString
+    */    var buildProperties, buildPropertyNames, buildSelector, render, toCss;
+    render = function(styleSheetArray) {
+      var cssSelectorArray;
+      return ((function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = styleSheetArray.length; _i < _len; _i++) {
+          cssSelectorArray = styleSheetArray[_i];
+          _results.push(toCss(cssSelectorArray));
+        }
+        return _results;
+      })()).join("\n");
+    };
+    /*
+    toCss : cssSelectorArray, parent -> cssString
+    where parent is a selector
+    and cssString is a string containing an arbitrary number of css selector definitions
+    */
+    toCss = function(cssSelectorArray, parent) {
+      var elem, selector;
+      if (parent == null) {
+        parent = null;
       }
-      return obj;
-   })([1]);
-
-
-   //iterate over objs
-   var objEach = function (obj, iterator, context) {
-
-      for (var key in obj) {
-         if (hasOwnProperty.call(obj, key)) iterator.call(context, obj[key], key, obj);
+      selector = buildSelector(parent, cssSelectorArray[0]);
+      return [
+        selector, " {\n", ((function() {
+          var _i, _len, _ref, _results;
+          _ref = cssSelectorArray.slice(1);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            elem = _ref[_i];
+            if (toString.call(elem) === '[object Object]') {
+              _results.push(buildProperties(elem));
+            }
+          }
+          return _results;
+        })()).join(""), "}\n"
+      ].concat((function() {
+        var _i, _len, _ref, _results;
+        _ref = cssSelectorArray.slice(1);
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          elem = _ref[_i];
+          if (isArray(elem)) {
+            _results.push(toCss(elem, selector));
+          }
+        }
+        return _results;
+      })()).join("");
+    };
+    /*
+    buildSelector : (parent, selector) -> selector
+    split selector if multiple, and append parent to each part (if any), and rejoin if split
+    e.g: buildSelector("h2", "span, strong")
+        -> "h2 span, h2 strong"
+    e.g: buildSelector("#main div, #sub div", "span, strong")
+        -> "#main div span, #main div strong, #sub div span, #sub div strong"
+    e.g: -> null, "span, strong"
+    */
+    buildSelector = function(parent, selector) {
+      var parent, parentParts, part, selectorParts;
+      if (parent != null) {
+        selectorParts = selector.split(",");
+        parentParts = parent.split(",");
+        return ((function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = parentParts.length; _i < _len; _i++) {
+            parent = parentParts[_i];
+            _results.push(((function() {
+              var _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = selectorParts.length; _i < _len; _i++) {
+                part = selectorParts[_i];
+                _results.push(parent + " " + part);
+              }
+              return _results;
+            })()).join(", "));
+          }
+          return _results;
+        })()).join(", ");
+      } else {
+        return selector;
       }
-
-      return obj;
-   };
-
-
-   //tests if number
-   var isNumber = function (value) {
-      return typeof(value) === 'number';
-   };
-   
-
-   //checks if something is 'hash'
-   var isHashObj = function (value) {
-      return value.toString() === '[object Object]';
-   };
-   
-
-   //test if a string starts with another string
-   var strStart = function (needle, isInString) {
-      var start_str = isInString.substr(0, needle.length);
-      return start_str === needle;
-   };
-   
-
-   //detects if linage has multiple selector
-   var hasMultiSelector = function (lineage) {
-      return (lineage[0] && lineage[0].split(",")[1]);
-   }
-
-
-   //detects if key is declared explicitly as a selector (if it starts with $)
-   var isCssSelector = function (key) {
-
-      if (strStart("$", key)) return true;
-
-   };
-   
-
-   //cleans $ from key
-   var cleanDollar = function (key) {
-
-      //strip out $
-      if (strStart("$", key)) key = key.substr(1);
-      return key;
-   };
-   
-
-   //creates error objs for convertor
-   var invalidVal = function (message) {
-      var err = new Error(message);
-      err.type = "invalidVal";
-      return err;
-   }
-   
-   //replace all of instances of pattern in string
-   String.prototype.replaceAll = function(needle,replacement){
-	   return this.replace(new RegExp(needle,"g"),replacement) ;
-   };   
-
-   //processes a branch of the style obj, treating it as a css property
-   var processCssProperty = function (element, selectorLineage, propertyLineage, level, ckey, key) {
-	
-	var elems = [ckey];
-	
-	if (key.split(",")[1] != undefined){
-		elems = ckey.split(", ");
-	}
-
-	each(elems,function(elemkey){
-				  
-		//is the value an object? then add key to property lineage and go deeper
-		if (isHashObj(element)) {
-		   iterate(element, selectorLineage, propertyLineage.concat([elemkey]));	   
-		}
-		//the value is a string? print the property assignment
-		else if (typeof(element) == "string" || typeof(element) == "number") {
-		   wrt("  " + propertyLineage.concat([elemkey]).join("-") + ": " + element + ";");
-		}
-		else {
-		   throw invalidVal("Invalid value for property: " + elemkey);
-		}
-	});
-	
-   };
-
-
-   //processes a branch of the style obj, treating it as a css selector
-   var processCssSelector = function (element, selectorLineage, propertyLineage, level, ckey, key) {
-      //is the value a hash obj? it should be, for a selector
-      //print the selector and its lineage, and go down to the next level
-      if (isHashObj(level[key])) {
-
-         if (openSelector) wrt("}");
-
-         //print selector, handle whether multiple or single	
-         if (hasMultiSelector(selectorLineage)) {
-
-            //split first part	
-            var rootSel = selectorLineage[0].split(",");
-
-            var temp = [];
-
-            each(rootSel, function (rootPart, part) {
-               //join each part of that with the other lineage parts
-               temp.push(
-		      [rootPart].concat(selectorLineage.slice(1))
-			.concat([ckey])
-			.join(" ")
-			.replaceAll(" :",":")
-		   );
-            });
-
-            //join those parts with ","
-            temp = temp.join(",")
-
-            //write, don't update
-            wrt(temp + " { ");
-
-         }
-         //print as a single selector
-         else {
-            wrt(selectorLineage.concat([ckey])
-			.join(" ")
-			.replaceAll(" :",":") + " { "
-		);
-         }
-
-         openSelector = true;
-
-         //go deeper, passing in lineage
-         iterate(element, selectorLineage.concat([ckey]), propertyLineage);
+    };
+    /*
+    #tests
+    console.log buildSelector("h2", "span, strong") is "h2 span, h2 strong"
+    console.log buildSelector("#main div, #sub div", "span, strong") is "#main div span, #main div strong, #sub div span, #sub div strong"
+    console.log buildSelector(null, "span, strong") is "span, strong"
+    */
+    /*
+    buildPropertyNames : (null || array), array -> array
+    appends parent selectors to property name parts with "-"
+    #e.g: buildPropertyNames(null,["margin","padding"])
+        -> ["margin","padding"]
+    #e.g: buildPropertyNames(["font"],["size","weight"])
+        -> ["font-size","font-weight"]
+    */
+    buildPropertyNames = function(parentParts, cssPropertyNameParts) {
+      var cssPropertyNamePart, parent, _i, _len, _results;
+      if (parentParts == null) {
+        parentParts = null;
       }
-      else {
-         throw invalidVal("Invalid value for selector " + key);
+      if (parentParts != null) {
+        _results = [];
+        for (_i = 0, _len = cssPropertyNameParts.length; _i < _len; _i++) {
+          cssPropertyNamePart = cssPropertyNameParts[_i];
+          _results.push(((function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = parentParts.length; _i < _len; _i++) {
+              parent = parentParts[_i];
+              _results.push([parent].concat(cssPropertyNamePart).join("-"));
+            }
+            return _results;
+          })()).join(""));
+        }
+        return _results;
+      } else {
+        return cssPropertyNameParts;
       }
+    };
+    /*
 
-   };
-   
-
-   //a flag to remember if there is a selctor open or not
-   var openSelector = false;
-   
-
-   //writes and remembers output string
-   var output = "";
-   
-
-   var wrt = function (x) {
-      output += "\r\n " + x;
-   };
-   
-
-   //run through the object	
-   //deal with lineage as an array. don't destructively change lineage arrays, 
-   //just change long enough to pass to next iteration
-   //(use .concat([i]) instead of .push(i)
-   var iterate = function (level, selectorLineage, propertyLineage) {
-
-      var selectorLineage = selectorLineage || [],
-          propertyLineage = propertyLineage || [];
-
-      objEach(level, function (element, key) {
-
-         //strip out curly brackets, which are only there to provide uniqueness
-         skey = key.split("{")[0] + (key.split("}")[1] || "");
-         //e.g: ".myClass|uniq" becomes "myClass"
-         //clean $ from key
-         ckey = cleanDollar(skey);
-         //e.g: "$.myClass" becomes ".myClass
-         //we still need to retain the original key for referencing
-         //is the key a property name? 
-         if (!isCssSelector(skey)) {
-            processCssProperty(element, selectorLineage, propertyLineage, level, ckey, key);
-         }
-         //treat key as a selector
-         else {
-            processCssSelector(element, selectorLineage, propertyLineage, level, ckey, key);
-         }
-      });
-
-      return null;
-
-   };
+    console.log buildPropertyNames(null,["margin","padding"])
+    console.log buildPropertyNames(["font"],["size","weight"])
+    */
+    /*
+    buildProperties : cssPropertyObj, parent -> cssString
 
 
-   //the main convertor func.
-   var jsonToCss = function (styleObj) {
 
-      var startTime = (new Date).getTime();
-
-      output = "";
-
-      try {
-         iterate(styleObj);
+    */
+    buildProperties = function(cssPropertyObj, parent) {
+      var cssPropertyName, cssPropertyVal, parentParts, propertyName, propertyNames, val;
+      if (parent == null) {
+        parent = null;
       }
-      catch (error) {
-         if (error.type == "invalidVal") {
-            wrt("Exception: " + error.message)
-         }
-         else {
-            throw error;
-         }
-      }
+      parentParts = parent ? parent.split(", ") : null;
+      return ((function() {
+        var _results;
+        _results = [];
+        for (cssPropertyName in cssPropertyObj) {
+          cssPropertyVal = cssPropertyObj[cssPropertyName];
+          _results.push((propertyNames = buildPropertyNames(parentParts, cssPropertyName.split(",")), isArray(cssPropertyVal) ? ((function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = cssPropertyVal.length; _i < _len; _i++) {
+              val = cssPropertyVal[_i];
+              _results.push(buildProperties(val, propertyNames.join(",")));
+            }
+            return _results;
+          })()).join("") : ((function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = propertyNames.length; _i < _len; _i++) {
+              propertyName = propertyNames[_i];
+              _results.push("  " + propertyName + ": " + cssPropertyVal + ";\n");
+            }
+            return _results;
+          })()).join("")));
+        }
+        return _results;
+      })()).join("");
+    };
+    /*
+    cssPropertyObj1 = "font-size" : 1.4 + "em"
+    cssPropertyObj2 = "size" : 1.4 + "em"
+    cssPropertyObj3 = "font" : cssPropertyObj2
+    cssPropertyObj4 = "margin,padding" : 10 + "px"
 
-      if (openSelector) wrt("}");
 
-      openSelector = false;
-
-      var exTime = (new Date).getTime() - startTime;
-
-      wrt("/* Parse time: " + exTime + "ms */");
-
-      //returns raw css string
-      return output;
-
-   }; //end son converter func
-   
-
-   //just somewhere to hold style references
-   var styles = {};
-   
-
-   // Current version.
-   var VERSION = '1.0.3';
-   
-
-   // CommonJS export jsonToCss method and version #
-   if (typeof exports !== 'undefined') {
-      exports.jsonToCss = jsonToCss;
-      exports.VERSION = VERSION;
-   }
-   
-
-   // send whole son obj to window(browser) or global(server) scope
-   this.son = {};
-   this.son.jsonToCss = jsonToCss;
-   this.son.styles = styles;
-   this.son.VERSION = VERSION;
-   
-
-})();
+    console.log buildProperties cssPropertyObj3
+    console.log buildProperties cssPropertyObj4
+    */
+    this.render = render;
+    return this;
+  };
+  root.Son = new Son();
+}).call(this);

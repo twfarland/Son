@@ -1,9 +1,7 @@
 #SON
 
 'Style Object Notation'
-Converts JSON to CSS.
-Inspired by [Sass](http://sass-lang.com),
-but intended as a more javascript-native solution for manageable css
+Converts Coffeescript/Javascript to CSS.
 
 Released under the MIT license.
 Creator: [Tim Farland](http://timfarland.com)
@@ -11,253 +9,169 @@ Creator: [Tim Farland](http://timfarland.com)
 
 ##What can Son do?
 
-###Son lets you use pure JSON to describe css stylesheets
+###Son lets you use pure javascript to describe css stylesheets
 
-Because of this, styles can be altered using normal js, and no
-special constructs like 'mixins' are required. This opens up many possibilities for defining, transporting, and manipulating styles.
+Son is inspired by [Sass](http://sass-lang.com), but is more Lispy in spirit, in that it is an embedded DSL rather than an external one.
 
-Son is designed for those comfortable with both css and basic js.
+Because of this, styles can be altered using normal js, and no special constructs like 'mixins' are required. This opens up many possibilities for defining, transporting, and manipulating styles.
 
-- Selectors and property fragments may be nested, as in Sass
-- CommonJS-ready
-- You can store the style json wherever you want, but I found it convenient to make separate .js files for my stylesheets, and use routes to 
-return the corresponding css.
-- Also works clientside (but I wouldn't really use it for that)
+For terse style definition, I recommend using coffeescript *(all examples are given in coffeescript)*
 
-For example:
+###Example:
 
-    //mystyles.son.js
+The array:
 
-    (function(){
+    Son.render [["#main"
+                    font: 
+                        [size: 1.4 + "em",
+                         weight: "normal"]
+                    "margin,padding": 10 + "px"
+                    ["h3"
+                        "font-weight": "bold"
+                        color: "#000"
+                    ]
+                ]]    
 
-    var myColour = '#ff0000';
+Is converted to the following string: 
 
-    var teststyles = {
-      "$#navbar" : {
-        width : "80%",
-        height : "23px",
-       "$ul" : {
-          list : {
-            "style-type" :  "none"
-           }
-        },
-        "$li" : {
-            float : "left",
-            border : "1px solid " + myColour,
-            padding : "10px",
-            "$a" : {
-                "font-weight" : "bold",
-                color : myColour
-            }
-        }
-    };
-
-    return teststyles;
-
-    })(); 
-
-Is returned as: 
-
-    /*mystyles.son.css*/
-
-    #navbar { 
- 	width: 80%;
- 	height: 23px;
+    #main {
+      font-size: 1.4em;
+      font-weight: normal;
+      margin: 10px;
+      padding: 10px;
     }
-    #navbar ul { 
- 	list-style-type: none;
+    #main h3 {
+      font-weight: bold;
+      color: #000;
     }
-    #navbar li { 
- 	float: left;
- 	border: 1px solid #ff0000;
- 	padding: 10px;
+ 
+A 'css selector array' is an array of more than one item, where the first item is a string defining the selector, and the remaining items are either js objects with a single key-value pair, or another (nested) style definition:
+
+    #one property
+    ["#main", color:"#333"] => #main { color:#333; }
+    
+    #multiple properties    
+    ["#main"
+        color: "#333"
+        "font-weight": "bold"] => #main { color:#333; font-weight:bold; }
+            
+And a stylesheet array is an array of 'css selector arrays'
+            
+The full data definitions for what is an acceptable 'css selector array' can be found commented at the top of Son.coffee   
+    
+    
+###Node usage
+
+    Son = require("./son.js").Son
+    
+    cssString = Son.render [stylesheetArray]    
+    
+    
+###Nested selectors
+
+After sass:
+
+    ["#main"
+        color: "#333"
+        ["h3", 
+            color: "#000"]]
+    =>
+    
+    #main {
+      color: #333;
     }
-    #navbar li a { 
- 	font-weight: bold;
- 	color: #ff0000;
+    #main h3 {
+      color: #000;
     }
     
-You can also write the styles in Coffeescript's lighter syntax:
+###Nested properties
 
-    myColour = "#ff1000"
+Nested properties inherit their parent as a prefix, joined with '-". Properties are considered nested when the value of a property declaration pair is an array: 
 
-    testStyles = 
-        "$#navbar" : 
-            width : "80%"
-            height : "23px"		
-            "$ul" :  
-                list : 
-                    style : 
-                        type : "none"
-                "$li" : 
-                    "float" : "left"
-                    border : "1px solid " + myColour
-                    padding : "10px"
-                    "$a" :  
-                        "font-weight" : "bold" 
-                        color : myColour
+    ["#main"
+        font: 
+            [size: 1.4 + "em",
+             weight: "normal"]
+    ]
+    
+    =>
+    
+    #main {
+      font-size: 1.4em;
+      font-weight: normal;
+    }
+    
+###Assigning multiple properties to the same value
 
-###Prefix any key you want treated as a css selector with `$`
+As in css, you can use multiple selectors in one declaration, you can use multiple property names:
 
-e.g:
-
-	"$div" : { --PROPERTIES-- }
-
-Otherwise, it will be considered a css property name.
-
-The first version of son had selector matching logic but I removed it because explicit declaration makes it much faster, and less affected by changing web standards.
-   
-
-##Usage
-
-Son was designed with with [Node.js](http://nodejs.org) / [Express](http://express.js.com), but it theory, it can be used with any serverside js implementation.
-
-You dont need to do any 'watch' commands, just put the son.js file in your node lib folder and require it:
-
-   var son = require('./son');
-
-Then, use son.jsonToCss() to convert your json style object to a css string:
-
-    var css = son.jsonToCss({ STYLE OBJECT });
-
-sonNodeTest.js shows an example that uses an Express route to get the json from an external .js file and return a css file:
-
-    /* sonNodeTest.js */
-
-    var http = require('http')
-	,fs = require('fs')
-	,sys = require('sys')
-	,son = require('./son')
-	,app = require('express').createServer();
-
-    var Script = process.binding('evals').Script;
-
-    //Routes *.son.css to the corresponding *.son.js
-    app.get('/*:file?.son.css', function(req, res){	
-	
-    fs.readFile('./' + req.params.file + ".son.js", function (err, sonToParse) {
-
-            if (err) throw err; 
-
-            res.send(
-                son.jsonToCss( 
-                    Script.runInThisContext(sonToParse.toString("utf8"))
-                ), 
-                { 'Content-Type': 'text/css' }, 201
-            ); 
-        });		
-    });
-
-    app.listen(3000);
- 
+    ["#main"
+        "margin,padding" : 10+"px"] 
+    =>
+    
+    #main {
+      margin: 10px;
+      padding: 10px;
+    }
 
 ##Manipulation
 
-Sass-style manipulation like mixins, variables, and inheritance can just be done by manipulating the styles object.
-
-These examples are very low-level and you could manipulate the styles in more exciting ways, 
-but I'm sure you guys would have have no problem coming up with your own ideas for that,
- because manipulation can be done with plain javascript. I might make some simple manipulation functions
-for my own use anyway, so I'll add them later. But for now, a nice FP library like 
-[underscore.js](http://documentcloud.github.com/underscore/) may be able to do what you need.
+Sass-style manipulation like mixins, variables, and inheritance can just be done by manipulating the styles array.
 
 ###Variables
 
-    var myColour = '#333';
+Yep, just use js:
 
-    var myStyles = {
-        "$div" : {
-            border : '1px solid ' + myColour,
-            color : myColour
-        }
-    };
+    myColour = "#CCC"
+    
+    ["#main"
+        color: myColour]
 
 ###Mixins       
 
-    var myShadow = function(colour){
-        return {
-            "-moz-box-shadow" : "2px 2px 2px " + colour,
-            "-webkit-box-shadow" : "2px 2px 2px " + colour,
-            "box-shadow" : "2px 2px 2px " + colour
-        };
-    };
+Just drop a function in the selector array:
 
-    var myStyles = {
-        "$div" : {
-            border : '1px solid #ccc'
-        }
-    };
+    shadow = (x,y,b,clr) ->
+        "box-shadow,-moz-box-shadow,-webkit-box-shadow": "#{x}px #{y}px #{b}px #{clr}"
 
-    //i.e. using underscore.js .extend() func:
-    _.extend(myStyles["$div"], myShadow("#333"));
-
-###Assigning multiple properties to the same value
-
-    var myStyles = {
-        "$myDiv" : {
-            "box, -moz-box, -webkit-box" : {
-                shadow: "2px 2px 2px #666"
-            }
-        }
-    };
+    style = ["h3"
+                color: "#000"
+                shadow 1,1,3,"#ccc"
+            ]
+    
+    Son.render [style] =>
+    
+    h3 {
+      color: #000;
+      box-shadow: 1px 1px 3px #ccc;
+      -moz-box-shadow: 1px 1px 3px #ccc;
+      -webkit-box-shadow: 1px 1px 3px #ccc;
+    }
+    
+So functions give you a great deal of control as you build an embedded styling language - all the power of js is available to manipulate your style arrays. As long as the resulting form adheres to what Son.render() expects, it will return valid css.
 
 
-###Other ideas for manipulation
-
-- a grid system
-- colour maths
-- style generator functions
-- using js object inheritance to generate style objects
-- merging style objects in the manner of stylesheet 'import' to benefit from modular css without extra http requests
-- layout/css framework generators
-
-
-##Gotchas
-
-We're trying to make json act like css here, so there are some extra things we need to do to avoid conflicts. I will code around some of these later, but you can use Son now if you take some simple safety measures:
-
-
-1 ] Because json keys must be unique at each level, you can't redeclare a selector as you can in raw css. To get around this, place some characters within `{}` to give uniqueness. The curly brackets and their contents will be ignored by the parser.. 
-
-e.g: `".myClass{}"` overrides `".myClass"`
-
-e.g: `".myClass{uniqueid}"` overrides `".myClass"` 
-
-
-2 ] To avoid certain characters being treated as js directives, you need to wrap some things in quotes:
-
-- Selectors that start with: `.`, `#`, `*`, `[`, `~`, `+`, `:`, `>`, `@`
-
-e.g: `".myClass"`, `":hover"`
-
-- Propeties that contain dashes
-
-e.g: `"font-size"`, `"list-style-type"`
-
-- Values that are mixtures of integers / strings / special characters:
-
-e.g: `"100%"`, `"40px"`
-
-
-
-##If you're not sure:
-
-- Wrap every key/value in quotes
 
 
 ##Dev to do
 
 - Convert the other way, from css to son (so people can bring in existing stylesheets)
 - Debug report mode
-- Do some kind of caching, using real css files created w. node.js
+- Make static css file compiler
 
 
-##Other to do
-
-- demos, docs, site
 
 
 ##Changelog
+
+20.04.11
+
+- Complete rewrite! 
+- The new syntax now preserves the ordering of styles
+- Allows terser mixins
+- More coffeescript-centric
+- Has no need for '$' prefixes on selectors
+- Is tighter, more testable code
 
 06.01.11
 
