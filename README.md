@@ -154,6 +154,7 @@ where:
 - selector is a valid css selector string, e.g "#main", "a:link, a:hover", "input[type='text']", "a span"
 - cssPropertyObj is a js object with only 1 key-value pair adhering to the following form:
 
+
     {cssPropertyName : (cssPropertyValue || [cssPropertyObj])}
             
 where:
