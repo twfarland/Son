@@ -27,7 +27,7 @@ The array:
                     font: 
                         [size: 1.4 + 'em',
                          weight: 'normal']
-                    'margin, padding': 10 + "px"
+                    'margin, padding': 10 + 'px'
                     ['h3'
                         'font-weight': 'bold'
                         color: '#000'
@@ -49,7 +49,7 @@ Is converted to the following string:
 
 ###Npm
 
-    nom install son    
+    npm install son    
     
 ###Node usage
 
@@ -77,7 +77,7 @@ After sass:
     
 ###Nested properties
 
-Nested properties inherit their parent as a prefix, joined with '-". Properties are considered nested when the value of a property declaration pair is an array: 
+Nested properties inherit their parent as a prefix, joined with "-". Properties are considered nested when the value of a property declaration pair is an array: 
 
     ['#main'
         font: 
@@ -93,7 +93,8 @@ Nested properties inherit their parent as a prefix, joined with '-". Properties 
     
 ###Giving multiple properties the same value
 
-As in css, you can use multiple selectors in one declaration, you can use multiple property names:
+In css, you can use multiple selectors in one declaration.
+In son, you can also use multiple property names:
 
     ['#main'
         'margin,padding' : 10 + 'px'] 
@@ -104,11 +105,11 @@ As in css, you can use multiple selectors in one declaration, you can use multip
       padding: 10px;
     }
 
-This also works on any inherited selectors.
 
 ##Manipulation
 
 Sass-style manipulation like mixins, variables, and inheritance can just be done by manipulating the styles array.
+
 
 ###Variables
 
@@ -149,12 +150,14 @@ A cssSelectorArray is an array adhering to the following form:
     [selector, (cssPropertyObj || cssSelectorArray)...]
     
 where:
+
 - selector is a valid css selector string, e.g "#main", "a:link, a:hover", "input[type='text']", "a span"
 - cssPropertyObj is a js object with only 1 key-value pair adhering to the following form:
 
     {cssPropertyName : (cssPropertyValue || [cssPropertyObj])}
             
 where:
+
 - cssPropertyName is either:
  - a valid css property name string, e.g: "font-weight"
  - multiple css property names joined by commas, e.g: "margin,padding"
