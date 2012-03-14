@@ -1,0 +1,8 @@
+{ "name": "son"
+, "version": "0.0.1"
+, "author": "Tim Farland <twfarland@gmail.com>"
+, "repository": "https://github.com/twfarland/Son"
+, "description": "Pure json CSS precompiler"
+, "homepage": "http://github.com/twfarland/Son"
+, "main": "lib/son"
+}

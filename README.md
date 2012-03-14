@@ -3,32 +3,34 @@
 'Style Object Notation'
 Converts Coffeescript/Javascript to CSS.
 
-Released under the MIT license.
+No license. Do what you want with this.
 Creator: [Tim Farland](http://timfarland.com)
 
 
 ##What can Son do?
 
-###Son lets you use pure javascript to describe css stylesheets
+###Son lets you use pure json to describe css stylesheets
 
 Son is inspired by [Sass](http://sass-lang.com), but is more Lispy in spirit, in that it is an embedded DSL rather than an external one.
 
 Because of this, styles can be altered using normal js, and no special constructs like 'mixins' are required. This opens up many possibilities for defining, transporting, and manipulating styles.
 
-For terse style definition, I recommend using coffeescript *(all examples are given in coffeescript)*
+For terse style definition, I recommend using coffeescript.
+
+All examples given in Coffeescript unless otherwise noted.
 
 ###Example:
 
 The array:
 
-    Son.render [["#main"
+    Son.render [['#main'
                     font: 
-                        [size: 1.4 + "em",
-                         weight: "normal"]
-                    "margin,padding": 10 + "px"
-                    ["h3"
-                        "font-weight": "bold"
-                        color: "#000"
+                        [size: 1.4 + 'em',
+                         weight: 'normal']
+                    'margin, padding': 10 + "px"
+                    ['h3'
+                        'font-weight': 'bold'
+                        color: '#000'
                     ]
                 ]]    
 
@@ -44,25 +46,14 @@ Is converted to the following string:
       font-weight: bold;
       color: #000;
     }
- 
-A 'css selector array' is an array of more than one item, where the first item is a string defining the selector, and the remaining items are either js objects with a single key-value pair, or another (nested) style definition:
 
-    #one property
-    ["#main", color:"#333"] => #main { color:#333; }
-    
-    #multiple properties    
-    ["#main"
-        color: "#333"
-        "font-weight": "bold"] => #main { color:#333; font-weight:bold; }
-            
-And a stylesheet array is an array of 'css selector arrays'
-            
-The full data definitions for what is an acceptable 'css selector array' can be found commented at the top of Son.coffee   
-    
+###Npm
+
+    nom install son    
     
 ###Node usage
 
-    Son = require("./son.js").Son
+    Son = require('son').Son
     
     cssString = Son.render [stylesheetArray]    
     
@@ -71,10 +62,10 @@ The full data definitions for what is an acceptable 'css selector array' can be 
 
 After sass:
 
-    ["#main"
-        color: "#333"
-        ["h3", 
-            color: "#000"]]
+    ['#main'
+        color: '#333'
+        ['h3', 
+            color: '#000']]
     =>
     
     #main {
@@ -88,11 +79,10 @@ After sass:
 
 Nested properties inherit their parent as a prefix, joined with '-". Properties are considered nested when the value of a property declaration pair is an array: 
 
-    ["#main"
+    ['#main'
         font: 
-            [size: 1.4 + "em",
-             weight: "normal"]
-    ]
+            [size: 1.4 + 'em',
+             weight: 'normal']]
     
     =>
     
@@ -101,18 +91,20 @@ Nested properties inherit their parent as a prefix, joined with '-". Properties 
       font-weight: normal;
     }
     
-###Assigning multiple properties to the same value
+###Giving multiple properties the same value
 
 As in css, you can use multiple selectors in one declaration, you can use multiple property names:
 
-    ["#main"
-        "margin,padding" : 10+"px"] 
+    ['#main'
+        'margin,padding' : 10 + 'px'] 
     =>
     
     #main {
       margin: 10px;
       padding: 10px;
     }
+
+This also works on any inherited selectors.
 
 ##Manipulation
 
@@ -122,22 +114,21 @@ Sass-style manipulation like mixins, variables, and inheritance can just be done
 
 Yep, just use js:
 
-    myColour = "#CCC"
+    myColour = '#CCC'
     
-    ["#main"
+    ['#main'
         color: myColour]
 
 ###Mixins       
 
 Just drop a function in the selector array:
 
-    shadow = (x,y,b,clr) ->
-        "box-shadow,-moz-box-shadow,-webkit-box-shadow": "#{x}px #{y}px #{b}px #{clr}"
+    shadow = (x, y, b, clr) ->
+        'box-shadow,-moz-box-shadow,-webkit-box-shadow': x + 'px ' + y + 'px ' + b + 'px ' + clr
 
-    style = ["h3"
-                color: "#000"
-                shadow 1,1,3,"#ccc"
-            ]
+    style = ['h3'
+                color: '#000'
+                shadow 1,1,3,'#ccc']
     
     Son.render [style] =>
     
@@ -151,18 +142,48 @@ Just drop a function in the selector array:
 So functions give you a great deal of control as you build an embedded styling language - all the power of js is available to manipulate your style arrays. As long as the resulting form adheres to what Son.render() expects, it will return valid css.
 
 
+### Acceptable forms
 
+A cssSelectorArray is an array adhering to the following form:
+ 
+    [selector, (cssPropertyObj || cssSelectorArray)...]
+    
+where:
+- selector is a valid css selector string, e.g "#main", "a:link, a:hover", "input[type='text']", "a span"
+- cssPropertyObj is a js object with only 1 key-value pair adhering to the following form:
 
-##Dev to do
+    {cssPropertyName : (cssPropertyValue || [cssPropertyObj])}
+            
+where:
+- cssPropertyName is either:
+ - a valid css property name string, e.g: "font-weight"
+ - multiple css property names joined by commas, e.g: "margin,padding"
+ - a partial css property name, e.g: "font", "weight"
+- cssPropertyValue is a valid css property value string
+     
+A styleSheetArray is an array of cssSelectorArrays:
+ 
+    [cssSelectorArray]    
 
-- Convert the other way, from css to son (so people can bring in existing stylesheets)
-- Debug report mode
-- Make static css file compiler
+examples:
 
+    cssPropertyObj1 = "font-size" : 1.4 + "em"
+    cssPropertyObj2 = "size" : 1.4 + "em"
+    cssPropertyObj3 = "font" : [cssPropertyObj2]
+    cssPropertyObj4 = "margin,padding" : 10 + "px"
 
+    cssSelectorArray1 = ["#main", cssPropertyObj1]
+    cssSelectorArray2 = [".main", cssPropertyObj3]
+    cssSelectorArray3 = ["div", cssPropertyObj1, cssPropertyObj4]
+
+    styleSheetArray1 = [cssSelectorArray1,cssSelectorArray3]
 
 
 ##Changelog
+
+14.03.12
+
+- Speed improvements, npm packaging
 
 20.04.11
 
@@ -193,6 +214,7 @@ So functions give you a great deal of control as you build an embedded styling l
 - Cleaned and speeded up son.js code a bit
 - Added support for multiple property declarations
 - Added son versions of blueprint css 'reset' and 'typography' sheets.
+
 
 ##Authors
 
